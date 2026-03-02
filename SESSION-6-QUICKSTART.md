@@ -1,313 +1,257 @@
-# Session 6 - PDF Export & Audio Narration - Quick Start Guide
+# Session 6 - Quick Start Guide 🚀
 
-**Feature**: Export books as PDFs and audiobooks with professional narration  
-**Status**: ✅ Ready for testing  
-**Time to test**: 5-10 minutes
+**PDF Export & Audio Narration** - Get Up and Running in 5 Minutes
 
 ---
 
-## What's New
+## Prerequisites
 
-### PDF Export
-- Generate print-ready PDFs of complete books
-- Professional cover page with title and image
-- Three layout options (image-top, image-full, image-left)
-- Download instantly or regenerate with different settings
-
-### Audio Narration
-- Natural-sounding narration with ElevenLabs AI voices
-- Multiple voice options (Rachel, Domi, Bella, Nicole)
-- Automatic silence gaps between pages
-- Single MP3 file with all pages narrated
-
-### Audiobook Format
-- Separate audiobook file (MP3 format)
-- Ready for audiobook apps
-- Includes metadata
-- M4B format coming in future update
+- Completed Sessions 1-5 (story generation, images, character consistency)
+- ElevenLabs account (free tier works): https://elevenlabs.io
+- Cloudflare R2 bucket configured (from Session 5)
 
 ---
 
-## Quick Start (5 Minutes)
-
-### 1. Set Up ElevenLabs API Key
+## 1. Install Dependencies ⚙️
 
 ```bash
-# Get API key from https://elevenlabs.io/app/settings/api-keys
-# Add to .env.local:
-ELEVENLABS_API_KEY=your-elevenlabs-api-key
+cd ~/shared/web-dev/ai-childrens-book-platform
+npm install
 ```
 
-**Free Tier**: 10,000 characters/month (~16 short books)
+This installs:
+- `jspdf` - PDF generation
+- `@elevenlabs/elevenlabs-js` - Text-to-speech
+- `@tailwindcss/postcss` - Tailwind v4 support
 
-### 2. Run Database Migration
+---
+
+## 2. Get ElevenLabs API Key 🔑
+
+1. Sign up at https://elevenlabs.io (free tier: 10,000 characters/month)
+2. Go to **Settings** → **API Keys**
+3. Click **Generate API Key**
+4. Copy the key
+
+---
+
+## 3. Configure Environment 🌍
+
+Edit `.env.local`:
 
 ```bash
-# Apply the new migration for export fields
+# Add this line
+ELEVENLABS_API_KEY=sk_your_elevenlabs_api_key_here
+```
+
+Make sure R2 is also configured (from Session 5):
+
+```bash
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET_NAME=ai-childrens-books
+```
+
+---
+
+## 4. Run Database Migration 🗄️
+
+```bash
+# Using Supabase CLI
 supabase db push
 
-# Or run manually in Supabase Dashboard:
-# supabase/migrations/20260302143200_add_exports.sql
+# Or manually: Run this SQL in Supabase Dashboard
+# File: supabase/migrations/20260302143200_add_exports.sql
 ```
 
-### 3. Start Dev Server
+The migration adds:
+- `pdf_url`, `audio_url`, `audiobook_url` to books table
+- Generation timestamps
+- Export metadata field
+- `narration_text` field to pages
+
+---
+
+## 5. Start the App 🎬
 
 ```bash
-npm install  # Install new dependencies (jspdf, elevenlabs SDK)
 npm run dev
 ```
 
-### 4. Test Exports
-
-1. **Open existing book** or create a new one:
-   - http://localhost:3000/books/[book-id]
-
-2. **Complete the book** if not already:
-   - Generate story
-   - Generate images
-   - Extract characters (optional but recommended)
-
-3. **Find Export Section**:
-   - Scroll down to "📦 Export Book" section
-   - Three export options available
-
-4. **Generate PDF**:
-   - Click "Generate PDF"
-   - Wait ~5-10 seconds
-   - PDF opens in new tab
-   - Verify cover page and all pages render correctly
-
-5. **Generate Audio**:
-   - Click "Generate MP3"
-   - See estimated cost (~$0.60-$0.90 for 12 pages)
-   - Wait ~30-60 seconds
-   - MP3 downloads automatically
-   - Play and verify narration
-
-6. **Generate Audiobook**:
-   - Click "Generate Audiobook"
-   - Same process as MP3
-   - Separate file for audiobook apps
+Open http://localhost:3000 (or 3003 if 3000 is in use)
 
 ---
 
-## Testing Checklist
+## 6. Test Exports 🧪
 
-### PDF Export
-- [ ] PDF generates successfully
-- [ ] Cover page shows title, age range, genre, first page image
-- [ ] All content pages have images and text
-- [ ] Layout is professional and readable
-- [ ] Page numbers appear (if enabled)
-- [ ] Can regenerate with same settings
-- [ ] "Download PDF" button works after generation
+### Create or Open a Book
 
-### Audio Narration
-- [ ] ElevenLabs API key configured
-- [ ] Cost estimate displays before generation
-- [ ] MP3 generates without errors
-- [ ] All pages are narrated in order
-- [ ] Silence gaps between pages (~1.5 seconds)
-- [ ] Voice sounds natural and clear
-- [ ] Can play in any audio player
-- [ ] "Download MP3" button works after generation
+1. Navigate to a **completed book** (status = "complete", has images)
+2. Scroll to the **"Export Book"** section
 
-### Audiobook
-- [ ] Generates separately from MP3 narration
-- [ ] File is named differently (audiobook-*)
-- [ ] Can be imported into audiobook apps
-- [ ] "Download Audiobook" button works
+### Generate PDF
 
-### UI/UX
-- [ ] Export section only visible when book is complete
-- [ ] All pages must have images to export PDF
-- [ ] Loading states show during generation
-- [ ] Success messages appear after generation
-- [ ] "Generated" badges show for existing exports
-- [ ] Generation timestamps display correctly
-- [ ] Error messages are clear and helpful
+1. Click **"Generate PDF"** button
+2. Wait ~10-30 seconds (depends on page count)
+3. PDF downloads automatically
+4. ✅ Success! Check the file in your Downloads folder
 
----
+**PDF includes**:
+- Professional cover page
+- All pages with images and text
+- Page numbers
+- Print-ready quality
 
-## Common Issues
+### Generate MP3 Narration
 
-### PDF Generation Fails
+1. Click **"Generate MP3"** button
+2. See estimated cost (e.g., ~$0.60 for 12 pages)
+3. Wait ~30-60 seconds (2-3s per page)
+4. MP3 downloads automatically
+5. ✅ Success! Play the audio file
 
-**Problem**: "Some pages are missing images"  
-**Solution**: Generate images for all pages first
+**Audio includes**:
+- Natural voice narration (Rachel by default)
+- 1.5 second pauses between pages
+- High-quality MP3 output
 
-**Problem**: PDF is blank or missing content  
-**Solution**: Check that permanent_image_url or image_url exists for all pages
+### Generate Audiobook
 
-### Audio Generation Fails
+1. Click **"Generate Audiobook"** button
+2. Same process as MP3 (currently generates MP3 format)
+3. Stored separately for audiobook apps
+4. ✅ Success!
 
-**Problem**: "ElevenLabs API key not configured"  
-**Solution**: Add ELEVENLABS_API_KEY to .env.local
-
-**Problem**: "Failed to generate narration"  
-**Solution**: Check ElevenLabs API key is valid, check credit balance
-
-**Problem**: Audio is too quiet or distorted  
-**Solution**: Adjust stability/similarityBoost settings in API call
-
-### Export Section Not Showing
-
-**Problem**: Export buttons don't appear  
-**Solution**: Book status must be 'complete' and have at least one page with images
+**Future**: M4B format with chapter markers and metadata
 
 ---
 
-## API Endpoints
+## 7. Verify Everything Works ✅
 
-### PDF Export
+### Check Database
+
+Open Supabase Dashboard → Books table:
+
+- `pdf_url` should be set (R2 URL)
+- `audio_url` should be set (R2 URL)
+- `audiobook_url` should be set (R2 URL)
+- Timestamps show when generated
+
+### Check R2 Storage
+
+Open Cloudflare Dashboard → R2:
+
+```
+Bucket: ai-childrens-books
+└── {user_id}/
+    └── {book_id}/
+        └── exports/
+            ├── {book-title}.pdf
+            ├── {book-title}.mp3
+            └── audiobook-{book-title}.mp3
+```
+
+### Re-download Existing
+
+1. Refresh the book page
+2. Export buttons now show **"Download"** (not "Generate")
+3. Click **"Download PDF"** → instant download
+4. Click **"Regenerate"** to create a new version
+
+---
+
+## Troubleshooting 🔧
+
+### "ElevenLabs API key not configured"
+
+- Check `.env.local` has `ELEVENLABS_API_KEY=sk_...`
+- Restart dev server after adding env vars
+
+### "Failed to upload to storage"
+
+- Verify R2 credentials in `.env.local`
+- Check bucket exists and has correct permissions
+
+### "Some pages are missing images"
+
+- Generate images first (click "Generate Images" button)
+- All pages need images before PDF export
+
+### Build errors
+
 ```bash
-POST /api/books/[id]/export/pdf
-{
-  "layout": "image-top",      # image-top | image-full | image-left
-  "fontSize": 14,             # Text size
-  "includePageNumbers": true, # Show page numbers
-  "includeCover": true        # Include cover page
-}
-
-GET /api/books/[id]/export/pdf  # Check if PDF exists
+# Clean and rebuild
+rm -rf .next node_modules
+npm install
+npm run build
 ```
 
-### Audio Export
+### TypeScript errors
+
+All fixed in Session 6! If you see errors, make sure you have the latest code:
+
 ```bash
-POST /api/books/[id]/export/audio
-{
-  "voiceName": "Rachel",          # Rachel | Domi | Bella | Nicole
-  "voiceId": "...",               # Optional: use specific voice ID
-  "modelId": "eleven_turbo_v2_5", # Model to use
-  "stability": 0.5,               # 0-1, voice consistency
-  "similarityBoost": 0.75,        # 0-1, clarity
-  "silenceDuration": 1500         # Milliseconds between pages
-}
-
-GET /api/books/[id]/export/audio  # Check if audio exists
-```
-
-### Audiobook Export
-```bash
-POST /api/books/[id]/export/audiobook
-{
-  # Same parameters as audio export
-}
-
-GET /api/books/[id]/export/audiobook  # Check if audiobook exists
+git pull origin main
+npm install
 ```
 
 ---
 
-## Voice Options
+## Quick Reference 📚
 
-| Voice | ID | Best For |
-|-------|-----|----------|
-| **Rachel** (default) | 21m00Tcm4TlvDq8ikWAM | General storytelling, calm tone |
-| **Domi** | AZnzlk1XvdvUeBnXmlld | Energetic stories, adventure |
-| **Bella** | EXAVITQu4vr4xnSDxMaL | Bedtime stories, gentle tone |
-| **Nicole** | piTKgcLEGmPE4e6mEKli | Educational books, clear diction |
+### Available Voices
 
----
+- **Rachel**: Warm, calm, friendly (default)
+- **Domi**: Energetic, expressive
+- **Bella**: Soft, gentle
+- **Nicole**: Confident, clear
 
-## Layout Examples
+### PDF Layouts
 
-### image-top (Default)
-```
-┌─────────────────────────────────┐
-│                                 │
-│         [IMAGE 65%]             │
-│                                 │
-├─────────────────────────────────┤
-│                                 │
-│  Centered text below image      │
-│  Good for storytelling          │
-│                                 │
-└─────────────────────────────────┘
-```
+- **image-top**: Image on top, text below (default)
+- **image-full**: Full-page image with text overlay
+- **image-left**: Side-by-side layout
 
-### image-full
-```
-┌─────────────────────────────────┐
-│                                 │
-│    [FULL PAGE BACKGROUND]       │
-│                                 │
-│                                 │
-├─────────────────────────────────┤
-│ Text overlay at bottom (90%)    │
-└─────────────────────────────────┘
-```
+### Cost Estimates
 
-### image-left
-```
-┌──────────────┬──────────────────┐
-│              │                  │
-│   [IMAGE     │  Text on right   │
-│    55%]      │  side            │
-│              │  Good for longer │
-│              │  text passages   │
-└──────────────┴──────────────────┘
-```
+- **PDF**: FREE (only storage cost: ~$0.002/month per book)
+- **Audio**: ~$0.30 per 1000 characters
+  - 12-page book (~2000 chars) = ~$0.60
+  - Free tier: 10,000 chars/month = ~5 books/month
+- **Storage**: ~$0.003/month per book (PDF + audio)
 
 ---
 
-## Cost Breakdown
+## What's Next? 🎯
 
-### PDF Export
-- **Generation**: Free (computational only)
-- **Storage**: ~$0.015/GB/month (R2)
-- **Per book**: <$0.01 for typical 12-page PDF
+Now that exports work:
 
-### Audio Narration
-- **Generation**: ~$0.30 per 1000 characters (ElevenLabs)
-- **Storage**: ~$0.015/GB/month (R2)
-- **Per 12-page book**: $0.60-$0.90 (2000-3000 chars)
-- **Per 6-page book**: $0.30-$0.45 (1000-1500 chars)
-- **Per 18-page book**: $0.90-$1.35 (3000-4500 chars)
+1. ✅ **Test with real books** - Generate stories and export them
+2. ✅ **Try different voices** - Compare narration quality
+3. ✅ **Test PDF layouts** - See which works best for your books
+4. ✅ **Monitor costs** - Check ElevenLabs usage dashboard
+5. ✅ **Share books** - Download and share with friends/family!
 
-### Total Cost
-- **PDF only**: ~$0.01 per book
-- **PDF + Audio**: ~$0.70 per book
-- **All formats**: ~$0.80 per book
+**Session 7 possibilities**:
+- M4B audiobook format (with metadata)
+- Voice customization UI
+- PDF template options
+- Progress tracking for exports
+- Batch export (PDF + audio in one click)
 
 ---
 
-## Next Steps
+## Need Help? 💬
 
-After testing:
-
-1. **Verify all formats work correctly**
-   - PDFs render properly
-   - Audio plays smoothly
-   - Files are shareable
-
-2. **Test with different scenarios**
-   - Short books (6 pages)
-   - Long books (18 pages)
-   - Different layouts
-   - Different voices
-
-3. **User feedback**
-   - Share with test users
-   - Get feedback on PDF layout
-   - Get feedback on voice quality
-
-4. **Plan future enhancements**
-   - M4B audiobook format
-   - Custom narration scripts
-   - Background job processing
-   - More layout options
+- Check `SESSION-6-COMPLETE.md` for full documentation
+- Review API endpoints: `app/api/books/[id]/export/*/route.ts`
+- Check services: `lib/services/pdf-generator.ts` and `audio-narration.ts`
+- Test in isolation: Use Postman/curl to call API endpoints directly
 
 ---
 
-## Support
+**Enjoy creating and exporting your children's books!** 📚🎧
 
-**Documentation**: See SESSION-6-COMPLETE.md for full details  
-**API Docs**: Check route.ts files for endpoint specifications  
-**Voice Samples**: https://elevenlabs.io/voice-library
-
----
-
-**Status**: ✅ Ready for testing  
-**Version**: 1.0.0  
-**Date**: March 2, 2026
+*Generated by: Ethan (AI Sub-Agent)*  
+*Session 6 - Quick Start Guide*

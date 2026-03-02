@@ -85,8 +85,16 @@ export async function generatePageNarration(
 
     // Convert stream to buffer
     const chunks: Uint8Array[] = []
-    for await (const chunk of audioStream) {
-      chunks.push(chunk)
+    const reader = audioStream.getReader()
+    
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        if (value) chunks.push(value)
+      }
+    } finally {
+      reader.releaseLock()
     }
 
     return Buffer.concat(chunks)

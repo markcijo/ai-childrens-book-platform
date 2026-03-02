@@ -162,12 +162,10 @@ async function addContentPage(
       }
     }
 
-    // Text overlay with semi-transparent background
+    // Text overlay with white background
     const textHeight = 120
     pdf.setFillColor(255, 255, 255)
-    pdf.setGlobalAlpha(0.9)
     pdf.rect(0, pageHeight - textHeight, pageWidth, textHeight, 'F')
-    pdf.setGlobalAlpha(1.0)
 
     // Add text
     pdf.setFontSize(fontSize)
