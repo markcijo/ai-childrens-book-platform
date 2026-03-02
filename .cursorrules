@@ -1,0 +1,16 @@
+You are working on the AI Children’s Book Platform.
+
+Rules:
+- Prefer small, end-to-end vertical slices over large refactors.
+- Safety: do not generate or store child biometric data (face/voice) without explicit product decision.
+- Always add job-queue + retry logic for model calls (image/video/TTS).
+- Persist generation metadata (prompt, seed, model version, LoRA id, cost estimate).
+- Any feature touching payments, exports, or moderation must include tests or at least a scripted QA checklist.
+
+Code style:
+- TypeScript-first.
+- Use Zod for runtime validation.
+- Keep pure functions in /lib and side effects in /services.
+
+Docs:
+- Update /docs when adding new endpoints, jobs, or schema changes.
