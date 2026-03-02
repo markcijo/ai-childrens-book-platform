@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { JobProgress } from './JobProgress'
 
 type GenerateImagesButtonProps = {
   bookId: string
@@ -13,16 +14,13 @@ export default function GenerateImagesButton({
   onComplete,
   disabled = false 
 }: GenerateImagesButtonProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [isCreatingJob, setIsCreatingJob] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [progress, setProgress] = useState<string>('')
+  const [jobId, setJobId] = useState<string | null>(null)
 
   const handleGenerate = async () => {
-    setIsGenerating(true)
+    setIsCreatingJob(true)
     setError(null)
-    setSuccessMessage(null)
-    setProgress('Starting image generation...')
 
     try {
       const response = await fetch(`/api/books/${bookId}/generate-images`, {
@@ -35,38 +33,57 @@ export default function GenerateImagesButton({
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate images')
+        throw new Error(data.error || 'Failed to create image generation job')
       }
 
-      // Show success message
-      setSuccessMessage(data.message || 'Images generated successfully!')
-      setProgress('')
-      
-      // Call onComplete callback to refresh the page
-      if (onComplete) {
-        setTimeout(() => {
-          onComplete()
-        }, 1000)
-      }
-
+      // Set job ID to start tracking
+      setJobId(data.jobId)
     } catch (err) {
-      console.error('Error generating images:', err)
-      setError(err instanceof Error ? err.message : 'Failed to generate images')
-      setProgress('')
+      console.error('Error creating image generation job:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create job')
     } finally {
-      setIsGenerating(false)
+      setIsCreatingJob(false)
     }
+  }
+
+  const handleJobComplete = () => {
+    // Call onComplete callback to refresh the page
+    if (onComplete) {
+      onComplete()
+    }
+    setJobId(null)
+  }
+
+  const handleJobError = (errorMessage: string) => {
+    setError(errorMessage)
+    setJobId(null)
+  }
+
+  // Show job progress if we have a job ID
+  if (jobId) {
+    return (
+      <div className="space-y-4">
+        <JobProgress
+          jobId={jobId}
+          onComplete={handleJobComplete}
+          onError={handleJobError}
+        />
+        <p className="text-xs text-gray-500">
+          💡 You can navigate away from this page. Images will continue generating in the background.
+        </p>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-3">
       <button
         onClick={handleGenerate}
-        disabled={disabled || isGenerating}
+        disabled={disabled || isCreatingJob}
         className={`
           px-6 py-3 rounded-lg font-semibold text-white
           transition-all duration-200
-          ${isGenerating 
+          ${isCreatingJob 
             ? 'bg-purple-400 cursor-not-allowed' 
             : disabled
             ? 'bg-gray-400 cursor-not-allowed'
@@ -74,7 +91,7 @@ export default function GenerateImagesButton({
           }
         `}
       >
-        {isGenerating ? (
+        {isCreatingJob ? (
           <span className="flex items-center gap-2">
             <svg 
               className="animate-spin h-5 w-5" 
@@ -96,19 +113,12 @@ export default function GenerateImagesButton({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            Generating Images...
+            Starting...
           </span>
         ) : (
           '🎨 Generate Images'
         )}
       </button>
-
-      {/* Progress indicator */}
-      {progress && (
-        <div className="text-sm text-gray-600 animate-pulse">
-          {progress}
-        </div>
-      )}
 
       {/* Error message */}
       {error && (
@@ -119,23 +129,13 @@ export default function GenerateImagesButton({
         </div>
       )}
 
-      {/* Success message */}
-      {successMessage && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800 flex items-center gap-2">
-            <span className="text-lg">✅</span>
-            <strong>{successMessage}</strong>
-          </p>
-        </div>
-      )}
-
       {/* Information about image generation */}
-      {!isGenerating && !successMessage && (
+      {!isCreatingJob && !jobId && (
         <div className="text-xs text-gray-500 max-w-md">
           <p>
             💡 This will generate images for all pages using AI. 
             The process takes about 2-3 minutes per page. 
-            Images will appear in the storyboard as they're generated.
+            You can navigate away and come back later - images will continue generating in the background.
           </p>
         </div>
       )}

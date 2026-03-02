@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { generateStory } from '@/lib/services/story-generator'
+import { createJob, generateIdempotencyKey } from '@/lib/services/job-queue'
 
 type RouteParams = {
   params: Promise<{
@@ -8,6 +8,10 @@ type RouteParams = {
   }>
 }
 
+/**
+ * POST /api/books/[id]/generate-story
+ * Create an async job to generate story (returns job ID for polling)
+ */
 export async function POST(
   request: NextRequest,
   { params }: RouteParams
@@ -57,66 +61,34 @@ export async function POST(
       .update({ status: 'generating' })
       .eq('id', bookId)
 
-    // Generate the story using Claude
-    const generatedStory = await generateStory({
-      storyIdea: book.story_idea,
-      title: book.title,
-      ageRange: book.age_range,
-      genre: book.genre,
-      pageCount: book.page_count,
-    })
-
-    // Delete existing pages if any
-    await supabase
-      .from('pages')
-      .delete()
-      .eq('book_id', bookId)
-
-    // Insert all pages
-    const pagesData = generatedStory.pages.map((page) => ({
-      book_id: bookId,
-      page_number: page.pageNumber,
-      text: page.narrationText,
-      scene_description: page.sceneDescription,
-      image_prompt: page.imagePrompt,
-      status: 'complete' as const,
-    }))
-
-    const { error: pagesError } = await supabase
-      .from('pages')
-      .insert(pagesData)
-
-    if (pagesError) {
-      console.error('Error inserting pages:', pagesError)
-      
-      // Revert book status
-      await supabase
-        .from('books')
-        .update({ status: 'draft' })
-        .eq('id', bookId)
-      
-      return NextResponse.json(
-        { error: 'Failed to save generated pages' },
-        { status: 500 }
-      )
-    }
-
-    // Update book status to complete
-    await supabase
-      .from('books')
-      .update({ 
-        status: 'complete',
-        story_text: generatedStory.pages.map(p => p.narrationText).join('\n\n'),
-      })
-      .eq('id', bookId)
+    // Create job with idempotency key
+    const idempotencyKey = generateIdempotencyKey(user.id, 'story_generation', bookId)
+    
+    const job = await createJob({
+      userId: user.id,
+      type: 'story_generation',
+      relatedId: bookId,
+      relatedType: 'book',
+      inputData: {
+        bookId,
+        storyIdea: book.story_idea,
+        title: book.title,
+        ageRange: book.age_range,
+        genre: book.genre,
+        pageCount: book.page_count,
+      },
+      idempotencyKey,
+      maxAttempts: 3,
+    }, supabase)
 
     return NextResponse.json({
       success: true,
-      message: 'Story generated successfully',
-      pageCount: generatedStory.pages.length,
+      message: 'Story generation job created',
+      jobId: job.id,
+      status: job.status,
     })
   } catch (error) {
-    console.error('Story generation error:', error)
+    console.error('Story generation job creation error:', error)
     
     // Try to revert book status on error
     try {
@@ -131,7 +103,7 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate story' },
+      { error: error instanceof Error ? error.message : 'Failed to create story generation job' },
       { status: 500 }
     )
   }

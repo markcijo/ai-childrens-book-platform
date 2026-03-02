@@ -46,11 +46,32 @@
 - [x] Character display (Character Bible)
 - [x] Automatic character extraction after first page
 
-### Session 5 (Future)
-- [ ] Layout: 3 templates + PDF render
-- [ ] Audio: narration generation + download (ElevenLabs)
-- [ ] Job queue for async operations
+### Session 6 (Complete ✅)
+- [x] Layout: 3 templates + PDF render
+- [x] Audio: narration generation + download (ElevenLabs)
+- [x] Export: PDF, MP3, M4B download buttons
+- [x] Book export UI with progress indicators
+
+### Session 7 (Complete ✅)
+- [x] Job queue design + idempotency keys
+- [x] Enhanced jobs table schema (progress, retry, metadata)
+- [x] Job queue service (create, update, poll status)
+- [x] Job worker service (process all job types)
+- [x] Convert story generation to async job
+- [x] Convert image generation to async job
+- [x] Convert exports (PDF, audio) to async jobs
+- [x] Job status API endpoint (poll job status)
+- [x] UI updates for async job tracking (JobProgress component)
+- [x] useJobStatus hook for polling
+- [x] Idempotency keys prevent duplicate jobs
+- [x] Retry logic with exponential backoff
+- [x] All TypeScript strict mode passing
+- [x] npm run build works clean
+
+### Session 8+ (Future)
+- [ ] Upload PDFs/audio to R2/S3 (permanent storage)
 - [ ] Admin: job logs + cost dashboard
+- [ ] Webhook support (alternative to polling)
 
 ## P2 — Premium features
 - [ ] Chapter clip animation (1080p) via Kling (credit-gated)
