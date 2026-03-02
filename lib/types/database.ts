@@ -22,7 +22,10 @@ export type Book = {
   user_id: string
   title: string
   description: string | null
+  story_idea: string | null
   age_range: string | null
+  genre: string | null
+  page_count: number
   moral: string | null
   status: 'draft' | 'generating' | 'complete' | 'published'
   story_text: string | null

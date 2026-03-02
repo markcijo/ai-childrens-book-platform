@@ -2,6 +2,7 @@
 
 import { Project } from '@/lib/types/database'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export default function ProjectsList({ initialProjects }: { initialProjects: Project[] }) {
   const [projects] = useState<Project[]>(initialProjects)
