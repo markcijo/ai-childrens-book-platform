@@ -1,5 +1,5 @@
 -- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- UUID generation uses built-in gen_random_uuid()
 
 -- Users table (extends Supabase auth.users)
 -- No need to create users table - Supabase Auth handles it
@@ -27,7 +27,7 @@ CREATE POLICY "Users can update own profile"
 
 -- Projects table (a "universe" for characters/books)
 CREATE TABLE projects (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
@@ -57,7 +57,7 @@ CREATE POLICY "Users can delete own projects"
 
 -- Books table
 CREATE TABLE books (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   title TEXT NOT NULL,
@@ -92,7 +92,7 @@ CREATE POLICY "Users can delete own books"
 
 -- Pages table
 CREATE TABLE pages (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   book_id UUID REFERENCES books(id) ON DELETE CASCADE NOT NULL,
   page_number INTEGER NOT NULL,
   text TEXT NOT NULL,
@@ -151,7 +151,7 @@ CREATE POLICY "Users can delete pages of own books"
 
 -- Jobs table (for async operations)
 CREATE TABLE jobs (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   type TEXT NOT NULL, -- storyboard_generate, page_image_generate, etc.
   status TEXT DEFAULT 'pending', -- pending, running, complete, error, cancelled
