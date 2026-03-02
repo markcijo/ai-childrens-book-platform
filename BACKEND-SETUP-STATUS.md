@@ -53,19 +53,13 @@ All 6 migrations successfully applied:
 
 The following API keys need to be added to Vercel before full functionality:
 
-### Required for Story Generation
+### ✅ Story Generation - CONFIGURED
 **Anthropic Claude API Key**
 - Service: https://console.anthropic.com/
 - Purpose: Generate story text using Claude
 - Environment Variable: `ANTHROPIC_API_KEY`
-- Priority: 🔴 **CRITICAL** - Core feature won't work without this
-
-**Command to add:**
-```bash
-cd ~/shared/web-dev/ai-childrens-book-platform
-vercel env add ANTHROPIC_API_KEY production
-# Paste your key when prompted
-```
+- Status: ✅ **CONFIGURED** - Using existing key from pawstory project
+- Priority: 🟢 **DONE**
 
 ### Required for Image Generation
 **Replicate API Token**
@@ -159,20 +153,22 @@ vercel --prod
 | Database Migrations | ✅ Applied | 6/6 migrations successful |
 | Supabase Auth | ✅ Ready | Email/password auth enabled |
 | Environment Variables (Supabase) | ✅ Configured | Added to Vercel |
-| Environment Variables (AI) | ⚠️ Pending | Need Anthropic, Replicate, ElevenLabs |
-| Vercel Deployment | ⏳ Ready | Waiting for API keys |
-| End-to-End Testing | ⏸️ Blocked | Need API keys to test |
+| Anthropic API (Story Gen) | ✅ Configured | Using existing key |
+| Replicate API (Images) | ⚠️ Pending | Need API token |
+| ElevenLabs API (Audio) | ⚠️ Pending | Need API key (optional) |
+| Vercel Deployment | 🔄 Building | Deploying now |
+| End-to-End Testing | ⏳ Partial | Story gen ready, images blocked |
 
 ---
 
-## 🎯 WHAT'S WORKING NOW (Without AI Keys)
+## 🎯 WHAT'S WORKING NOW
 
 - ✅ Signup/Login (Supabase Auth)
 - ✅ Dashboard access
 - ✅ Create/view/edit projects
 - ✅ Create/view/edit books
 - ✅ Database operations (all CRUD)
-- ❌ Story generation (needs Anthropic)
+- ✅ **Story generation (Anthropic configured!)**
 - ❌ Image generation (needs Replicate)
 - ❌ Audio narration (needs ElevenLabs)
 
