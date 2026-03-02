@@ -10,14 +10,20 @@ interface BookDetailLayoutProps {
 const statusStyles = {
   draft: 'bg-gray-100 text-gray-800',
   generating: 'bg-blue-100 text-blue-800 animate-pulse',
+  generating_images: 'bg-purple-100 text-purple-800 animate-pulse',
   complete: 'bg-green-100 text-green-800',
+  partial: 'bg-yellow-100 text-yellow-800',
+  error: 'bg-red-100 text-red-800',
   published: 'bg-purple-100 text-purple-800',
 }
 
 const statusLabels = {
   draft: 'Draft',
   generating: 'Generating...',
+  generating_images: 'Generating Images...',
   complete: 'Complete',
+  partial: 'Partial',
+  error: 'Error',
   published: 'Published',
 }
 

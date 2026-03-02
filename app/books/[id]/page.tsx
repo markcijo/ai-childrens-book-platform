@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import BookDetailLayout from '@/components/BookDetailLayout'
+import GenerateStoryButton from '@/components/GenerateStoryButton'
+import GenerateImagesButton from '@/components/GenerateImagesButton'
+import ExtractCharactersButton from '@/components/ExtractCharactersButton'
+import BookCharacters from '@/components/BookCharacters'
+import StoryboardPages from '@/components/StoryboardPages'
+import ExportButtons from '@/components/ExportButtons'
 
 interface BookPageProps {
   params: Promise<{ id: string }>
@@ -32,11 +38,12 @@ export default async function BookPage({ params }: BookPageProps) {
     notFound()
   }
 
-  // Fetch pages count (will be used in Session 3)
-  const { count: pagesCount } = await supabase
+  // Fetch pages
+  const { data: pages, count: pagesCount } = await supabase
     .from('pages')
-    .select('*', { count: 'exact', head: true })
+    .select('*', { count: 'exact' })
     .eq('book_id', id)
+    .order('page_number', { ascending: true })
 
   return (
     <BookDetailLayout book={book} projectId={book.project_id}>
@@ -138,57 +145,114 @@ export default async function BookPage({ params }: BookPageProps) {
           </div>
         </div>
 
-        {/* Pages placeholder */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Pages</h2>
-            <span className="text-sm text-gray-500">
-              {pagesCount || 0} / {book.page_count} pages
-            </span>
+        {/* Generate Story Button */}
+        {book.status === 'draft' && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
+            <h3 className="font-semibold text-indigo-900 mb-2">Ready to Create Your Story?</h3>
+            <p className="text-sm text-indigo-800 mb-4">
+              Click the button below to generate your complete story with {book.page_count} pages, 
+              scene descriptions, and image prompts tailored for {book.age_range} year-olds.
+            </p>
+            <GenerateStoryButton bookId={id} bookStatus={book.status} />
           </div>
+        )}
 
-          {pagesCount === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <svg
-                className="w-16 h-16 mx-auto mb-4 text-gray-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
+        {/* Generating Status */}
+        {book.status === 'generating' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <svg className="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <p className="text-lg font-medium mb-2">No pages yet</p>
-              <p className="text-sm">
-                Page generation will be available in the next update!
+              <h3 className="font-semibold text-blue-900">Generating Your Story...</h3>
+            </div>
+            <p className="text-sm text-blue-800">
+              Our AI is crafting your {book.page_count}-page {book.genre.toLowerCase()} story. 
+              This usually takes 30-60 seconds. Feel free to refresh the page to check progress.
+            </p>
+          </div>
+        )}
+
+        {/* Generate Images Button */}
+        {book.status === 'complete' && pages && pages.length > 0 && (
+          (() => {
+            const pagesWithoutImages = pages.filter(p => !p.image_url)
+            const hasAnyImages = pages.some(p => p.image_url)
+            
+            if (pagesWithoutImages.length > 0) {
+              return (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+                  <h3 className="font-semibold text-purple-900 mb-2">
+                    {hasAnyImages ? 'Continue Generating Images' : 'Ready to Create Illustrations?'}
+                  </h3>
+                  <p className="text-sm text-purple-800 mb-4">
+                    {hasAnyImages 
+                      ? `${pagesWithoutImages.length} ${pagesWithoutImages.length === 1 ? 'page needs' : 'pages need'} illustrations. Continue generating to complete your book!`
+                      : `Your story is ready! Generate beautiful AI illustrations for all ${pages.length} pages.`
+                    }
+                  </p>
+                  <GenerateImagesButton bookId={id} />
+                </div>
+              )
+            }
+            return null
+          })()
+        )}
+
+        {/* Extract Characters Section */}
+        {book.status === 'complete' && pages && pages.some(p => p.image_url) && (
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-6">
+            <h3 className="font-semibold text-purple-900 mb-2">Character Consistency</h3>
+            <p className="text-sm text-purple-800 mb-4">
+              Extract character descriptions from your book to ensure they look consistent across all pages.
+            </p>
+            <ExtractCharactersButton
+              bookId={id}
+              hasImages={pages.some(p => p.image_url)}
+              charactersExtracted={book.characters_extracted || false}
+            />
+          </div>
+        )}
+
+        {/* Book Characters Display */}
+        {book.characters_extracted && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <BookCharacters bookId={id} />
+          </div>
+        )}
+
+        {/* Export Buttons */}
+        {book.status === 'complete' && pages && pages.length > 0 && (
+          <ExportButtons 
+            book={book} 
+            hasImages={pages.some(p => p.permanent_image_url || p.image_url)}
+          />
+        )}
+
+        {/* Storyboard Pages */}
+        {book.status === 'complete' && pages && (
+          <StoryboardPages pages={pages} bookId={id} />
+        )}
+        
+        {/* Also show storyboard while generating images */}
+        {book.status === 'generating_images' && pages && (
+          <>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-2">
+                <svg className="animate-spin h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <h3 className="font-semibold text-purple-900">Generating Images...</h3>
+              </div>
+              <p className="text-sm text-purple-800">
+                Creating beautiful illustrations for your {pages.length}-page book. 
+                Images appear in the storyboard as they're generated (2-3 minutes each).
               </p>
             </div>
-          ) : (
-            <div className="text-gray-500">
-              Page management coming in Session 3...
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        {book.status === 'draft' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="font-semibold text-blue-900 mb-2">Next Steps</h3>
-            <p className="text-sm text-blue-800 mb-4">
-              Story generation and illustration features will be available in
-              upcoming sessions!
-            </p>
-            <button
-              disabled
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg opacity-50 cursor-not-allowed"
-            >
-              Generate Story (Coming Soon)
-            </button>
-          </div>
+            <StoryboardPages pages={pages} bookId={id} />
+          </>
         )}
       </div>
     </BookDetailLayout>

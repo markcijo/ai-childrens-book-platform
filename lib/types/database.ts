@@ -27,8 +27,17 @@ export type Book = {
   genre: string | null
   page_count: number
   moral: string | null
-  status: 'draft' | 'generating' | 'complete' | 'published'
+  status: 'draft' | 'generating' | 'generating_images' | 'complete' | 'partial' | 'published' | 'error'
   story_text: string | null
+  characters_extracted: boolean
+  character_extraction_status: 'pending' | 'extracting' | 'complete' | 'error'
+  pdf_url: string | null
+  audio_url: string | null
+  audiobook_url: string | null
+  pdf_generated_at: string | null
+  audio_generated_at: string | null
+  audiobook_generated_at: string | null
+  export_metadata: Record<string, any> | null
   created_at: string
   updated_at: string
 }
@@ -38,10 +47,42 @@ export type Page = {
   book_id: string
   page_number: number
   text: string
+  narration_text: string | null
   scene_description: string | null
   image_url: string | null
+  permanent_image_url: string | null
   image_prompt: string | null
+  character_ids: string[] | null
+  generation_metadata: Record<string, any> | null
   status: 'pending' | 'generating' | 'complete' | 'error'
+  created_at: string
+  updated_at: string
+}
+
+export type Character = {
+  id: string
+  book_id: string
+  user_id: string
+  name: string
+  description: string
+  reference_image_url: string | null
+  permanent_image_url: string | null
+  appearance_details: {
+    species?: string
+    age_appearance?: string
+    hair_color?: string
+    hair_style?: string
+    eye_color?: string
+    skin_tone?: string
+    height?: string
+    build?: string
+    clothing?: string
+    distinctive_features?: string[]
+    colors?: string[]
+  }
+  personality: string | null
+  role: 'main_character' | 'supporting' | 'background'
+  first_seen_page: number
   created_at: string
   updated_at: string
 }
@@ -89,6 +130,11 @@ export type Database = {
         Row: Job
         Insert: Omit<Job, 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Omit<Job, 'id' | 'created_at' | 'updated_at'>>
+      }
+      characters: {
+        Row: Character
+        Insert: Omit<Character, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Character, 'id' | 'created_at' | 'updated_at'>>
       }
     }
   }

@@ -19,10 +19,37 @@
 - [ ] Cost/credit metering model (per image, per LoRA train, per minute of TTS)
 
 ## P1 — MVP build
-- [ ] Next.js app: auth, project create, book wizard
-- [ ] Backend: create-book job, generate-page job, regenerate-page
+
+### Session 1-3 (Complete ✅)
+- [x] Next.js app: auth, project create, book wizard
+- [x] Story generation service (Anthropic Claude integration)
+- [x] Generate story API endpoint
+- [x] Storyboard UI (display pages with scene descriptions)
+- [x] Age-appropriate content system (3-5, 6-8, 9-12, 13+)
+
+### Session 4 (Complete ✅)
+- [x] Image generation service (Replicate FLUX schnell)
+- [x] Generate images API endpoint
+- [x] Generate Images button in UI
+- [x] Display generated images in storyboard
+- [x] Store image URLs in database
+- [x] Error handling for failed generations
+- [x] Loading states and progress tracking
+
+### Session 5 (Complete ✅)
+- [x] Character bible creation (extract from story)
+- [x] Character consistency (img2img reference-conditioning)
+- [x] S3/R2 permanent image storage
+- [x] Upload generated images to S3/R2
+- [x] Page regeneration controls
+- [x] Character extraction UI
+- [x] Character display (Character Bible)
+- [x] Automatic character extraction after first page
+
+### Session 5 (Future)
 - [ ] Layout: 3 templates + PDF render
-- [ ] Audio: narration generation + download
+- [ ] Audio: narration generation + download (ElevenLabs)
+- [ ] Job queue for async operations
 - [ ] Admin: job logs + cost dashboard
 
 ## P2 — Premium features
